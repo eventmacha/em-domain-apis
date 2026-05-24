@@ -1,5 +1,6 @@
 package com.eventmacha.dto.response;
 
+import com.eventmacha.enums.UserType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
@@ -10,7 +11,7 @@ public class OrderResponse {
 
     private String orderId;
     private String userId;
-    private String userType;
+    private UserType userType;
     private String rateCardId;
     private String planType;
     private Double basePrice;
@@ -27,8 +28,8 @@ public class OrderResponse {
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
 
-    public String getUserType() { return userType; }
-    public void setUserType(String userType) { this.userType = userType; }
+    public UserType getUserType() { return userType; }
+    public void setUserType(UserType userType) { this.userType = userType; }
 
     public String getRateCardId() { return rateCardId; }
     public void setRateCardId(String rateCardId) { this.rateCardId = rateCardId; }

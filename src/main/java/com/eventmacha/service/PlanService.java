@@ -3,6 +3,7 @@ package com.eventmacha.service;
 import com.eventmacha.dto.response.PlanResponse;
 import com.eventmacha.entity.RateCardEntity;
 import com.eventmacha.entity.RateCardPlanEntity;
+import com.eventmacha.enums.UserType;
 import com.eventmacha.repository.RateCardRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -25,16 +26,16 @@ public class PlanService {
      * Fetch all active rate cards with their plans for a given userType.
      * Falls back to all active plans if userType is null.
      */
-    public List<PlanResponse> getActivePlans(String userType) {
+    public List<PlanResponse> getActivePlans(UserType userType) {
         List<RateCardEntity> rateCards;
 
-        if (userType != null && !userType.isBlank()) {
-            rateCards = rateCardRepository.findRateCardsByUserType(userType).stream()
+        if (userType != null) {
+            rateCards = rateCardRepository.findRateCardsByUserType(userType.name()).stream()
                     .filter(rc -> Boolean.TRUE.equals(rc.getActive()))
                     .toList();
         } else {
             // Return all – in practice, scan is acceptable for small plan catalogues
-            rateCards = rateCardRepository.findRateCardsByUserType("CUSTOMER").stream()
+            rateCards = rateCardRepository.findRateCardsByUserType(UserType.CUSTOMER.name()).stream()
                     .filter(rc -> Boolean.TRUE.equals(rc.getActive()))
                     .toList();
         }

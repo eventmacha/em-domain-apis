@@ -1,5 +1,6 @@
 package com.eventmacha.entity;
 
+import com.eventmacha.enums.UserType;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
@@ -19,7 +20,7 @@ public class OrderEntity {
 
     private String orderId;
     private String userId;
-    private String userType;
+    private UserType userType;
     private String rateCardId;
     private String planType;
     private Double basePrice;
@@ -43,8 +44,8 @@ public class OrderEntity {
     public Long getCreatedAt() { return createdAt; }
     public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
 
-    public String getUserType() { return userType; }
-    public void setUserType(String userType) { this.userType = userType; }
+    public UserType getUserType() { return userType; }
+    public void setUserType(UserType userType) { this.userType = userType; }
 
     public String getRateCardId() { return rateCardId; }
     public void setRateCardId(String rateCardId) { this.rateCardId = rateCardId; }

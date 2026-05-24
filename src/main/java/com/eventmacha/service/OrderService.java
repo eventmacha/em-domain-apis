@@ -4,6 +4,7 @@ import com.eventmacha.dto.request.CreateOrderRequest;
 import com.eventmacha.dto.response.OrderResponse;
 import com.eventmacha.entity.OrderEntity;
 import com.eventmacha.entity.RateCardPlanEntity;
+import com.eventmacha.enums.UserType;
 import com.eventmacha.exception.BusinessException;
 import com.eventmacha.exception.NotFoundException;
 import com.eventmacha.exception.UnauthorizedException;
@@ -59,7 +60,7 @@ public class OrderService {
         OrderEntity order = new OrderEntity();
         order.setOrderId(IdGenerator.orderId());
         order.setUserId(principal.getUserId() != null ? principal.getUserId() : principal.getCognitoUserId());
-        order.setUserType("CUSTOMER");
+        order.setUserType(UserType.CUSTOMER.name());
         order.setRateCardId(request.getRateCardId());
         order.setPlanType(request.getPlanType());
         order.setBasePrice(plan.getBasePrice());

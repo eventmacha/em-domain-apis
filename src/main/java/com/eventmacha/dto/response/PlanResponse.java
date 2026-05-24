@@ -1,5 +1,6 @@
 package com.eventmacha.dto.response;
 
+import com.eventmacha.enums.UserType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
 public class PlanResponse {
 
     private String rateCardId;
-    private String userType;
+    private UserType userType;
     private String rateCardType;
     private String currency;
     private Boolean active;
@@ -58,14 +59,15 @@ public class PlanResponse {
     public String getRateCardId() { return rateCardId; }
     public void setRateCardId(String rateCardId) { this.rateCardId = rateCardId; }
 
-    public String getUserType() { return userType; }
-    public void setUserType(String userType) { this.userType = userType; }
+    public UserType getUserType() { return userType; }
+    public void setUserType(UserType userType) { this.userType = userType; }
 
     public String getRateCardType() { return rateCardType; }
     public void setRateCardType(String rateCardType) { this.rateCardType = rateCardType; }
 
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
+
 
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }

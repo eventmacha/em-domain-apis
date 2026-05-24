@@ -1,5 +1,6 @@
 package com.eventmacha.entity;
 
+import com.eventmacha.enums.UserType;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
@@ -21,7 +22,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 public class UserEntity {
 
     private String userId;
-    private String userType;
+    private UserType userType;
     private String email;
     private String phone;
     private String fullName;
@@ -48,8 +49,8 @@ public class UserEntity {
     // ── GSI: userType-index ───────────────────────────────────────────────────
 
     @DynamoDbSecondaryPartitionKey(indexNames = "userType-index")
-    public String getUserType() { return userType; }
-    public void setUserType(String userType) { this.userType = userType; }
+    public UserType getUserType() { return userType; }
+    public void setUserType(UserType userType) { this.userType = userType; }
 
     // ── GSI: provider-index ───────────────────────────────────────────────────
 

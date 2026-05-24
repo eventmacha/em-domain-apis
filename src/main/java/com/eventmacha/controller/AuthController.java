@@ -1,6 +1,8 @@
 package com.eventmacha.controller;
 
 import com.eventmacha.common.ApiResponse;
+import com.eventmacha.dto.request.LoginRequest;
+import com.eventmacha.dto.request.RegisterUserRequest;
 import com.eventmacha.dto.request.SocialAuthRequest;
 import com.eventmacha.dto.response.AuthResponse;
 import com.eventmacha.dto.response.UserResponse;
@@ -35,6 +37,43 @@ public class AuthController {
 
     @Inject
     AuthService authService;
+
+    /**
+     * POST /auth/register
+     * Registers a new user in Cognito and DynamoDB.
+     * This endpoint is open (no Bearer token required).
+     */
+    @POST
+    @Path("/register")
+    @Operation(summary = "Register New User",
+            description = "Registers a new user with email and password, creating entries in Cognito and DynamoDB.")
+    @APIResponse(responseCode = "200", description = "Registration successful")
+    @APIResponse(responseCode = "400", description = "Validation error or user already exists")
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = RegisterUserRequest.class)))
+    public Response register(@Valid RegisterUserRequest request) {
+        LOG.debugf("POST /auth/register email=%s", request.getEmail());
+        AuthResponse authResponse = authService.registerUser(request);
+        return Response.ok(ApiResponse.ok(authResponse)).build();
+    }
+
+    /**
+     * POST /auth/login
+     * Authenticate user using email and password against Cognito.
+     * Returns JWT tokens upon successful authentication.
+     */
+    @POST
+    @Path("/login")
+    @Operation(summary = "Login with Email and Password",
+            description = "Authenticates the user with Cognito using email and password and returns JWT tokens.")
+    @APIResponse(responseCode = "200", description = "Login successful")
+    @APIResponse(responseCode = "400", description = "Validation error")
+    @APIResponse(responseCode = "401", description = "Invalid credentials")
+    @RequestBody(required = true, content = @Content(schema = @Schema(implementation = LoginRequest.class)))
+    public Response login(@Valid LoginRequest request) {
+        LOG.debugf("POST /auth/login email=%s", request.getEmail());
+        AuthResponse authResponse = authService.loginUser(request);
+        return Response.ok(ApiResponse.ok(authResponse)).build();
+    }
 
     /**
      * POST /auth/social

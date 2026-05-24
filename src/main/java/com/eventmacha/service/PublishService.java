@@ -141,7 +141,8 @@ public class PublishService {
         history.setContentLocalized(entity.getPublishedContentLocalized());
         history.setImages(jsonUtil.toJson(entity.getPublishedImages()));
         history.setPublishedBy(principal.getUserId() != null
-                ? principal.getUserId() : principal.getCognitoUserId());
+                ? principal.getUserId()
+                : principal.getCognitoUserId());
         history.setStatus("PUBLISHED");
         history.setChangeReason(request.getChangeReason());
         history.setPublishedAt(entity.getPublishedAt());
@@ -188,7 +189,8 @@ public class PublishService {
 
     private void validateOwnership(String entityUserId, AuthenticatedUser principal) {
         String currentUserId = principal.getUserId() != null
-                ? principal.getUserId() : principal.getCognitoUserId();
+                ? principal.getUserId()
+                : principal.getCognitoUserId();
         if (!entityUserId.equals(currentUserId)) {
             throw new BusinessException("ACCESS_DENIED", "You do not own this resource");
         }
@@ -196,7 +198,8 @@ public class PublishService {
 
     private AuthenticatedUser requireAuthenticated() {
         AuthenticatedUser user = userContext.get();
-        if (user == null) throw new UnauthorizedException("Authentication required");
+        if (user == null)
+            throw new UnauthorizedException("Authentication required");
         return user;
     }
 
@@ -241,7 +244,8 @@ public class PublishService {
     }
 
     private Object parseJson(String jsonStr) {
-        if (jsonStr == null || jsonStr.isBlank()) return null;
+        if (jsonStr == null || jsonStr.isBlank())
+            return null;
         return jsonUtil.fromJson(jsonStr, Object.class).orElse(jsonStr);
     }
 }

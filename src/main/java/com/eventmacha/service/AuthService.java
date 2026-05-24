@@ -1,11 +1,15 @@
 package com.eventmacha.service;
 
+import com.eventmacha.dto.request.LoginRequest;
+import com.eventmacha.dto.request.RegisterUserRequest;
 import com.eventmacha.dto.request.SocialAuthRequest;
 import com.eventmacha.dto.response.AuthResponse;
 import com.eventmacha.dto.response.UserResponse;
 import com.eventmacha.entity.UserEntity;
+import com.eventmacha.enums.UserType;
 import com.eventmacha.exception.NotFoundException;
 import com.eventmacha.exception.UnauthorizedException;
+import com.eventmacha.exception.UserRegistrationException;
 import com.eventmacha.repository.UserRepository;
 import com.eventmacha.security.AuthenticatedUser;
 import com.eventmacha.security.AuthenticatedUserContext;
@@ -16,12 +20,11 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.SignUpResponse;
 
 import java.util.Optional;
 
-/**
- * Authentication service – validates Cognito JWTs and upserts the user profile in DynamoDB.
- */
 @ApplicationScoped
 public class AuthService {
 
@@ -36,18 +39,53 @@ public class AuthService {
     @Inject
     AuthenticatedUserContext userContext;
 
-    /**
-     * Handle social / email login.
-     *
-     * <ol>
-     *   <li>Validate the Cognito idToken.</li>
-     *   <li>Derive authProvider and providerUserId from claims.</li>
-     *   <li>Upsert the user in DynamoDB (create if not exists).</li>
-     *   <li>Return user profile.</li>
-     * </ol>
-     */
+    @Inject
+    CognitoService cognitoService;
+
+    public AuthResponse registerUser(RegisterUserRequest request) {
+        // Check if user already exists
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new UserRegistrationException("User with this email already exists", null);
+        }
+
+        // Register user in Cognito
+        SignUpResponse signUpResponse = cognitoService.signUp(request.getEmail(), request.getPassword(), request.getFullName());
+        String cognitoSub = signUpResponse.userSub();
+
+        // Create new user in DynamoDB
+        UserEntity user = new UserEntity();
+        user.setUserId(IdGenerator.userId());
+        user.setUserType(UserType.CUSTOMER);
+        user.setEmail(request.getEmail());
+        user.setFullName(request.getFullName());
+        user.setPhone(request.getPhone());
+        user.setAuthProvider("EMAIL");
+        user.setProviderUserId(request.getEmail());
+        user.setCognitoUserId(cognitoSub);
+        user.setStatus("ACTIVE");
+        user.setCreatedAt(TimeUtil.now());
+        user.setUpdatedAt(TimeUtil.now());
+        userRepository.save(user);
+
+        LOG.infof("New user registered: %s via EMAIL", user.getUserId());
+
+        return new AuthResponse(user.getUserId(), true, toUserResponse(user));
+    }
+
+    public AuthResponse loginUser(LoginRequest request) {
+        // Authenticate with Cognito
+        InitiateAuthResponse authResult = cognitoService.signIn(request.getEmail(), request.getPassword());
+
+        // Get user from DynamoDB
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        return new AuthResponse(user.getUserId(), false, toUserResponse(user),
+                authResult.authenticationResult().accessToken(),
+                authResult.authenticationResult().idToken());
+    }
+
     public AuthResponse socialLogin(SocialAuthRequest request) {
-        // Validate the Cognito JWT
         JWTClaimsSet claims;
         try {
             claims = jwtValidator.validate(request.getIdToken());
@@ -60,31 +98,25 @@ public class AuthService {
         String cognitoSub = claims.getSubject();
         String authProvider = request.getProvider();
         String providerUserId = jwtValidator.extractProviderUserId(claims);
-
-        // Derive email from claims or request body
         String email = safeGetClaim(claims, "email");
         if (email == null) email = request.getEmail();
 
-        // Look up existing user by provider
         Optional<UserEntity> existing = userRepository.findByProvider(authProvider, providerUserId);
-
         boolean isNewUser = false;
         UserEntity user;
 
         if (existing.isPresent()) {
             user = existing.get();
             LOG.debugf("Existing user login: %s", user.getUserId());
-            // Update mutable fields
             user.setUpdatedAt(TimeUtil.now());
             if (request.getProfileImage() != null) user.setProfileImage(request.getProfileImage());
             if (request.getFullName() != null) user.setFullName(request.getFullName());
             userRepository.save(user);
         } else {
-            // Create new user
             isNewUser = true;
             user = new UserEntity();
             user.setUserId(IdGenerator.userId());
-            user.setUserType("CUSTOMER");
+            user.setUserType(UserType.CUSTOMER);
             user.setEmail(email);
             user.setFullName(request.getFullName());
             user.setProfileImage(request.getProfileImage());
@@ -102,18 +134,12 @@ public class AuthService {
         return new AuthResponse(user.getUserId(), isNewUser, toUserResponse(user));
     }
 
-    /**
-     * Return the profile for the currently authenticated user.
-     */
     public UserResponse getCurrentUser() {
         AuthenticatedUser principal = requireAuthenticated();
-        // Try to find by cognitoSub first via email
         return userRepository.findByEmail(principal.getEmail())
                 .map(this::toUserResponse)
                 .orElseThrow(() -> new NotFoundException("User", principal.getCognitoUserId()));
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private AuthenticatedUser requireAuthenticated() {
         AuthenticatedUser user = userContext.get();
