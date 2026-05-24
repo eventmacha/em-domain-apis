@@ -24,7 +24,6 @@
         <nimbus.version>9.37.3</nimbus.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <surefire.plugin.version>3.2.5</surefire.plugin.version>
-        <lombok.version>1.18.32</lombok.version>
     </properties>
 
     <dependencyManagement>
@@ -128,14 +127,6 @@
             <version>${mapstruct.version}</version>
         </dependency>
 
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Nimbus JOSE+JWT for Cognito JWT validation -->
         <dependency>
             <groupId>com.nimbusds</groupId>
@@ -206,11 +197,6 @@
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
                             <version>${mapstruct.version}</version>
-                        </path>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

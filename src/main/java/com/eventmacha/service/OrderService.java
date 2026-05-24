@@ -60,7 +60,7 @@ public class OrderService {
         OrderEntity order = new OrderEntity();
         order.setOrderId(IdGenerator.orderId());
         order.setUserId(principal.getUserId() != null ? principal.getUserId() : principal.getCognitoUserId());
-        order.setUserType(UserType.CUSTOMER.name());
+        order.setUserType(UserType.CUSTOMER);
         order.setRateCardId(request.getRateCardId());
         order.setPlanType(request.getPlanType());
         order.setBasePrice(plan.getBasePrice());

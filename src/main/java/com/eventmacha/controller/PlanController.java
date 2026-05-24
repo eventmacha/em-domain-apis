@@ -3,6 +3,7 @@ package com.eventmacha.controller;
 import com.eventmacha.common.ApiResponse;
 import com.eventmacha.common.PaginatedResponse;
 import com.eventmacha.dto.response.PlanResponse;
+import com.eventmacha.enums.UserType;
 import com.eventmacha.service.PlanService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -48,7 +49,7 @@ public class PlanController {
             String userType) {
 
         LOG.debugf("GET /plans userType=%s", userType);
-        List<PlanResponse> plans = planService.getActivePlans(userType);
+        List<PlanResponse> plans = planService.getActivePlans(UserType.valueOf(userType));
         return Response.ok(ApiResponse.ok(PaginatedResponse.of(plans))).build();
     }
 }
